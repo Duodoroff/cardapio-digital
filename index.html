@@ -42,7 +42,7 @@
 
         <!-- Indicador de Carregamento -->
         <div id="loading" class="text-center py-10">
-            <p class="text-lg text-gray-500">Carregando cardápio...</p>
+            <p class="text-lg text-gray-500">A carregar o cardápio...</p>
         </div>
 
         <!-- Container do Cardápio -->
@@ -58,14 +58,7 @@
 
     <script>
         // --- PASSO IMPORTANTE ---
-        // Você precisa de 3 abas na sua planilha (ou 3 planilhas separadas).
-        // Publique CADA UMA DELAS como CSV ("Arquivo" > "Compartilhar" > "Publicar na web")
-        // e cole os links correspondentes abaixo.
-
-        // 1. Aba 'Itens': Colunas -> Categoria, Nome, Descricao, Preco, Foto_URL
-        // 2. Aba 'Categorias': Colunas -> Nome_Categoria, Titulo_Exibicao, Descricao_Secao, Foto_Categoria
-        // 3. Aba 'Config': Colunas -> Campo, Valor (Ex: 'Nome Restaurante', 'Café Varanda')
-
+        // Verifique se as 3 URLs abaixo estão corretas e se as planilhas estão publicadas.
         const GOOGLE_SHEETS_URLS = {
             items: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLlJ0SbuZ1nY5EwMXxO9vN7tf9JQMh7Vh3qvOIkH62VelfXaj5fa6FHdbY9MdMb-pUmI2dHuuHQ3Fx/pub?gid=531775951&single=true&output=csv',
             categories: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLlJ0SbuZ1nY5EwMXxO9vN7tf9JQMh7Vh3qvOIkH62VelfXaj5fa6FHdbY9MdMb-pUmI2dHuuHQ3Fx/pub?gid=1791212980&single=true&output=csv',
@@ -80,27 +73,43 @@
         const mainFooter = document.getElementById('main-footer');
 
         // --- Funções de Processamento de CSV ---
+        // **NOVO PARSER DE CSV ROBUSTO**
+        // Este parser consegue lidar com vírgulas dentro de campos de texto (descrições).
         const parseCsv = (text) => {
-            const lines = text.trim().split('\n');
+            if (!text) return [];
+            const lines = text.trim().replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) return [];
+
             const header = lines[0].split(',').map(h => h.trim());
+            const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\",\r\n]*))(?:\,|\r\n|\n|$)/g;
+
             const rows = lines.slice(1).map(line => {
-                const values = line.split(',').map(v => v.trim());
+                const rowValues = [];
+                let match;
+                // Usa a regex para extrair os valores corretamente
+                while (match = regex.exec(line)) {
+                    // Se o valor estava entre aspas, usa o grupo 1; senão, usa o grupo 2.
+                    let value = match[1] !== undefined ? match[1].replace(/\"\"/g, '\"') : match[2];
+                    if (value) {
+                       rowValues.push(value.trim());
+                    }
+                }
+                
                 let obj = {};
-                header.forEach((h, i) => obj[h] = values[i]);
+                header.forEach((h, i) => {
+                    obj[h] = rowValues[i];
+                });
                 return obj;
             });
             return rows;
         };
-
+        
         // --- Funções de Renderização ---
         function renderHeader(config) {
-            const nomeRestaurante = config['Nome Restaurante'] || 'Nosso Cardápio';
-            const slogan = config['Slogan'] || 'Feito com carinho para você!';
-            document.title = nomeRestaurante; // Atualiza o título da página
-            mainHeader.innerHTML = `
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900">${nomeRestaurante}</h1>
-                <p class="text-gray-600 mt-2 text-lg">${slogan}</p>
-            `;
+            const nomeRestaurante = config['Nome Restaurante'] || 'O Nosso Cardápio';
+            const slogan = config['Slogan'] || 'Feito com carinho para si!';
+            document.title = nomeRestaurante;
+            mainHeader.innerHTML = `<h1 class="text-4xl md:text-5xl font-bold text-gray-900">${nomeRestaurante}</h1><p class="text-gray-600 mt-2 text-lg">${slogan}</p>`;
         }
 
         function renderFooter(config) {
@@ -108,17 +117,12 @@
              const instagram = config['Instagram URL'];
              const facebook = config['Facebook URL'];
              const ano = new Date().getFullYear();
-             const nomeRestaurante = config['Nome Restaurante'] || 'Seu Restaurante';
-
+             const nomeRestaurante = config['Nome Restaurante'] || 'O Seu Restaurante';
              let socialLinks = '';
              if (whatsapp) socialLinks += `<a href="https://wa.me/${whatsapp.replace(/\D/g,'')}" target="_blank" class="text-green-600 hover:underline mx-2">WhatsApp</a>`;
              if (instagram) socialLinks += `<a href="${instagram}" target="_blank" class="text-pink-600 hover:underline mx-2">Instagram</a>`;
              if (facebook) socialLinks += `<a href="${facebook}" target="_blank" class="text-blue-800 hover:underline mx-2">Facebook</a>`;
-
-             mainFooter.innerHTML = `
-                <div class="mb-4">${socialLinks}</div>
-                <p>&copy; ${ano} ${nomeRestaurante}. Todos os direitos reservados.</p>
-             `;
+             mainFooter.innerHTML = `<div class="mb-4">${socialLinks}</div><p>&copy; ${ano} ${nomeRestaurante}. Todos os direitos reservados.</p>`;
         }
 
         function renderFilters(categories) {
@@ -132,19 +136,25 @@
             });
         }
 
+        function formatPrice(priceString) {
+            if (!priceString) return '';
+            const numericString = priceString.replace('R$', '').trim().replace(',', '.');
+            const priceNumber = parseFloat(numericString);
+            if (!isNaN(priceNumber)) {
+                return `R$ ${priceNumber.toFixed(2).replace('.', ',')}`;
+            }
+            return priceString; // Retorna o texto original se não for um número (ex: "Consultar preço")
+        }
+
         function renderMenu(categories, items) {
-            menuContainer.innerHTML = ''; // Limpa o container
-
+            menuContainer.innerHTML = '';
             categories.forEach(category => {
-                const categoryId = `category-${category.Nome_Categoria.replace(/\s+/g, '-')}`;
                 const categoryItems = items.filter(item => item.Categoria === category.Nome_Categoria);
-
-                if (categoryItems.length === 0) return; // Não renderiza categoria sem itens
-
+                if (categoryItems.length === 0) return;
+                const categoryId = `category-${category.Nome_Categoria.replace(/\s+/g, '-')}`;
                 const categorySection = document.createElement('section');
                 categorySection.id = categoryId;
-                categorySection.className = "pt-4"; // Padding para o scroll não colar no topo
-
+                categorySection.className = "pt-4";
                 categorySection.innerHTML = `
                     <div class="category-header-bg rounded-xl p-8 md:p-12 mb-8 shadow-lg flex flex-col justify-center items-center text-center" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${category.Foto_Categoria}')">
                         <h2 class="text-3xl md:text-4xl font-bold">${category.Titulo_Exibicao}</h2>
@@ -157,31 +167,28 @@
                                 <div class="p-4 flex flex-col flex-grow">
                                     <div class="flex justify-between items-start mb-1">
                                         <h3 class="text-xl font-bold text-gray-800">${item.Nome}</h3>
-                                        <p class="text-lg font-semibold text-green-700 whitespace-nowrap ml-4">R$ ${parseFloat(item.Preco).toFixed(2).replace('.', ',')}</p>
+                                        <p class="text-lg font-semibold text-green-700 whitespace-nowrap ml-4">${formatPrice(item.Preco)}</p>
                                     </div>
                                     <p class="text-gray-600 flex-grow">${item.Descricao}</p>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
+                            </div>`).join('')}
+                    </div>`;
                 menuContainer.appendChild(categorySection);
             });
         }
 
-        // --- Função Principal ---
+        // --- Função Principal com Diagnósticos ---
         async function initMenu() {
             try {
-                // Busca todos os dados em paralelo
                 const [itemsResponse, categoriesResponse, configResponse] = await Promise.all([
                     fetch(GOOGLE_SHEETS_URLS.items),
                     fetch(GOOGLE_SHEETS_URLS.categories),
                     fetch(GOOGLE_SHEETS_URLS.config)
                 ]);
 
-                if (!itemsResponse.ok || !categoriesResponse.ok || !configResponse.ok) {
-                    throw new Error('Falha ao carregar um ou mais arquivos CSV. Verifique as URLs publicadas.');
-                }
+                if (!itemsResponse.ok) throw new Error("Falha ao carregar os ITENS. Verifique a URL e as permissões da planilha de Itens.");
+                if (!categoriesResponse.ok) throw new Error("Falha ao carregar as CATEGORIAS. Verifique a URL e as permissões da planilha de Categorias.");
+                if (!configResponse.ok) throw new Error("Falha ao carregar a CONFIGURAÇÃO. Verifique a URL e as permissões da planilha de Config.");
 
                 const [itemsCsv, categoriesCsv, configCsv] = await Promise.all([
                     itemsResponse.text(),
@@ -189,26 +196,27 @@
                     configResponse.text()
                 ]);
 
-                // Processa os dados
                 const items = parseCsv(itemsCsv);
                 const categories = parseCsv(categoriesCsv);
                 const configData = parseCsv(configCsv);
-                
-                // Converte a config para um objeto mais fácil de usar (Campo -> Valor)
-                const config = configData.reduce((obj, item) => {
-                    obj[item.Campo] = item.Valor;
-                    return obj;
-                }, {});
 
-                // Renderiza tudo
+                if (categories.length === 0) throw new Error("Nenhuma categoria foi encontrada. Verifique se a planilha 'Categorias' está publicada, possui dados e o cabeçalho correto.");
+                if (items.length === 0) throw new Error("Nenhum item foi encontrado. Verifique se a planilha 'Itens' está publicada e possui dados.");
+                
+                const config = configData.reduce((obj, item) => { obj[item.Campo] = item.Valor; return obj; }, {});
+                
                 renderHeader(config);
                 renderFooter(config);
                 renderFilters(categories);
                 renderMenu(categories, items);
 
+                if (menuContainer.innerHTML.trim() === '') {
+                    throw new Error("Cardápio carregado, mas nenhum item correspondeu às categorias. Verifique se os nomes na coluna 'Categoria' (planilha de Itens) são EXATAMENTE iguais aos nomes na coluna 'Nome_Categoria' (planilha de Categorias).");
+                }
+
             } catch (error) {
-                console.error('Erro ao inicializar o cardápio:', error);
-                menuContainer.innerHTML = `<p class="text-center text-red-500 p-8 bg-red-100 rounded-lg">${error.message}</p>`;
+                console.error('ERRO DETALHADO:', error);
+                menuContainer.innerHTML = `<div class="text-center p-8 bg-red-100 rounded-lg"><h3 class="font-bold text-red-800 text-lg">Ocorreu um Erro</h3><p class="text-red-700 mt-2">${error.message}</p></div>`;
             } finally {
                 loadingIndicator.style.display = 'none';
             }
