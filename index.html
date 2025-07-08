@@ -57,15 +57,14 @@
         .dark .filter-btn { background-color: #374151; color: #d1d5db; border-color: #4b5563; }
         .dark .filter-btn:hover { background-color: #4b5563; }
         
-        /* CORREÇÃO: Classe dedicada para a placa do cabeçalho */
         .header-plaque-bg {
-            background-color: rgba(243, 244, 246, 0.8); /* gray-100 com 80% de opacidade */
+            background-color: rgba(243, 244, 246, 0.8);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             transition: background-color 0.3s;
         }
         .dark .header-plaque-bg {
-            background-color: rgba(17, 24, 39, 0.8); /* gray-900 com 80% de opacidade */
+            background-color: rgba(17, 24, 39, 0.8);
         }
     </style>
 </head>
@@ -91,6 +90,12 @@
         <footer id="main-footer" class="text-center mt-16 py-8 border-t border-gray-200 dark:border-gray-700 text-secondary"></footer>
     </div>
 
+    <!-- Botão Flutuante do WhatsApp -->
+    <a id="whatsapp-fab" href="#" target="_blank" class="hidden fixed bottom-5 left-5 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110">
+        <!-- O ícone do WhatsApp será inserido aqui pelo JavaScript -->
+    </a>
+
+    <!-- Botão de Troca de Tema -->
     <div id="theme-switcher" class="fixed bottom-5 right-5 z-50">
         <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
             <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
@@ -165,7 +170,6 @@
             
             const headerContent = document.getElementById('header-content');
             if(headerContent) {
-                // CORREÇÃO: Usa a classe de CSS dedicada para a placa de fundo
                 headerContent.innerHTML = `
                     <div class="header-plaque-bg inline-block p-6 rounded-lg">
                         ${logoHtml}
@@ -182,12 +186,12 @@
         }
 
         function renderFooter(config) {
-             const telefone = config['Telefone'];
              const instagram = config['Instagram URL'];
              const facebook = config['Facebook URL'];
              const endereco = config['Endereço'];
              const horarioAbertura = config['Horário de Abertura'];
              const horarioFechado = config['Horário de Fechado'];
+             const telefone = config['Telefone'];
              const ano = new Date().getFullYear();
              const nomeRestaurante = config['Nome Restaurante'] || 'O Seu Restaurante';
              
@@ -204,16 +208,27 @@
              infoBlock += '</div>';
 
              let socialLinks = '';
-             if (telefone) socialLinks += `<a href="https://wa.me/55${telefone.replace(/\D/g,'')}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="WhatsApp">${svgIcon('whatsapp')}</a>`;
              if (instagram) socialLinks += `<a href="${instagram}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="Instagram">${svgIcon('instagram')}</a>`;
              if (facebook) socialLinks += `<a href="${facebook}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="Facebook">${svgIcon('facebook')}</a>`;
              
              mainFooter.innerHTML = `${infoBlock}<div class="mb-4 flex justify-center items-center">${socialLinks}</div><p>&copy; ${ano} ${nomeRestaurante}. Todos os direitos reservados.</p>`;
         }
+        
+        // ATUALIZAÇÃO: Nova função para renderizar o botão flutuante do WhatsApp
+        function renderWhatsappButton(config) {
+            const telefone = config['Telefone'];
+            const whatsappFab = document.getElementById('whatsapp-fab');
+
+            if (telefone && whatsappFab) {
+                whatsappFab.href = `https://wa.me/55${telefone.replace(/\D/g,'')}`;
+                whatsappFab.innerHTML = svgIcon('whatsapp_fab');
+                whatsappFab.classList.remove('hidden');
+            }
+        }
 
         function svgIcon(name) {
             const icons = {
-                whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.447-4.435-9.884-9.888-9.884-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 4.315 1.847 6.062l-1.011 3.697 3.803-1.002z"/></svg>`,
+                whatsapp_fab: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.447-4.435-9.884-9.888-9.884-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 4.315 1.847 6.062l-1.011 3.697 3.803-1.002z"/></svg>`,
                 instagram: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.644-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.059 1.689.073 4.948.073s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.441 1.441 1.441 1.441-.645 1.441-1.441-.645-1.44-1.441-1.44z"/></svg>`,
                 facebook: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>`,
                 clock: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
@@ -387,6 +402,7 @@
             renderFooter(config);
             renderFilters(categories);
             renderMenu(categories, items);
+            renderWhatsappButton(config); // Adiciona o botão do WhatsApp
             if (menuContainer.innerHTML.trim() === '') {
                 menuContainer.innerHTML = `<div class="text-center p-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg"><h3 class="font-bold text-yellow-800 dark:text-yellow-300 text-lg">Aviso</h3><p class="text-yellow-700 dark:text-yellow-400 mt-2">Cardápio carregado, mas nenhum item correspondeu às categorias. Verifique se os nomes nas suas planilhas.</p></div>`;
             }
