@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --cor-primaria: #8D5B4C; /* Castanho elegante como padrão */
+            --cor-texto-primaria: #FFFFFF;
+        }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Lato', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
         }
         html {
             scroll-behavior: smooth;
@@ -19,26 +27,75 @@
             background-size: cover;
             background-position: center;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+        }
+        .social-icon:hover {
+            transform: scale(1.1);
+            color: var(--cor-primaria);
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Estilos para Tema Claro e Escuro */
+        .dark body { background-color: #111827; color: #d1d5db; }
+        .card-bg { background-color: white; }
+        .dark .card-bg { background-color: #1f2937; }
+        .text-main { color: #1f2937; }
+        .dark .text-main { color: #f9fafb; }
+        .text-secondary { color: #4b5563; }
+        .dark .text-secondary { color: #9ca3af; }
+        .theme-bar-bg { background-color: rgba(243, 244, 246, 0.95); }
+        .dark .theme-bar-bg { background-color: rgba(17, 24, 39, 0.95); }
+        .filter-btn { background-color: white; color: #1f2937; border-color: #d1d5db; }
+        .dark .filter-btn { background-color: #374151; color: #d1d5db; border-color: #4b5563; }
+        .dark .filter-btn:hover { background-color: #4b5563; }
+        
+        /* CORREÇÃO: Classe dedicada para a placa do cabeçalho */
+        .header-plaque-bg {
+            background-color: rgba(243, 244, 246, 0.8); /* gray-100 com 80% de opacidade */
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: background-color 0.3s;
+        }
+        .dark .header-plaque-bg {
+            background-color: rgba(17, 24, 39, 0.8); /* gray-900 com 80% de opacidade */
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-100 text-gray-800">
 
     <div class="container mx-auto p-4 sm:p-6 max-w-5xl">
-        <header id="main-header" class="text-center mb-6 md:mb-10"></header>
+        <header id="main-header" class="relative text-center mb-8 md:mb-12 rounded-lg overflow-hidden min-h-[250px] flex items-center justify-center p-6">
+            <div id="header-bg" class="absolute inset-0 bg-cover bg-center z-0"></div>
+            <div id="header-content" class="relative z-10">
+                </div>
+        </header>
 
-        <div id="category-filters" class="sticky top-0 bg-gray-50/95 backdrop-blur-sm py-4 z-10 mb-8">
-            <div id="filters-container" class="flex flex-wrap justify-center gap-2"></div>
+        <div id="category-filters" class="sticky top-0 theme-bar-bg backdrop-blur-sm py-4 z-20 mb-8">
+            <div id="filters-container" class="flex flex-wrap justify-center gap-3"></div>
         </div>
 
         <div id="loading" class="text-center py-10">
-            <p class="text-lg text-gray-500">A carregar o cardápio...</p>
+            <p class="text-lg text-secondary">A carregar o cardápio...</p>
         </div>
 
         <main id="menu-container" class="space-y-12"></main>
 
-        <footer id="main-footer" class="text-center mt-16 py-8 border-t border-gray-200 text-gray-600"></footer>
+        <footer id="main-footer" class="text-center mt-16 py-8 border-t border-gray-200 dark:border-gray-700 text-secondary"></footer>
+    </div>
+
+    <div id="theme-switcher" class="fixed bottom-5 right-5 z-50">
+        <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 12.122l.707-.707a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+        </button>
     </div>
 
     <script>
@@ -54,27 +111,21 @@
         const mainHeader = document.getElementById('main-header');
         const mainFooter = document.getElementById('main-footer');
 
-        // --- NOVO PARSER DE CSV MAIS ESTÁVEL ---
         const parseCsv = (text) => {
             const lines = text.trim().replace(/\r/g, '').split('\n');
             if (lines.length < 2) return [];
-            
             const header = lines[0].split(',').map(h => h.trim());
             const rows = [];
-
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim() === '') continue;
-                
                 const row = [];
                 let field = '';
                 let inQuotes = false;
-
                 for (let j = 0; j < lines[i].length; j++) {
                     const char = lines[i][j];
-
                     if (char === '"' && lines[i][j+1] === '"') {
                         field += '"';
-                        j++; // Ignora a próxima aspa
+                        j++;
                     } else if (char === '"') {
                         inQuotes = !inQuotes;
                     } else if (char === ',' && !inQuotes) {
@@ -84,51 +135,104 @@
                         field += char;
                     }
                 }
-                row.push(field); // Adiciona o último campo
-
+                row.push(field);
                 const obj = {};
-                header.forEach((h, k) => {
-                    obj[h] = row[k] ? row[k].trim() : '';
-                });
+                header.forEach((h, k) => { obj[h] = row[k] ? row[k].trim() : ''; });
                 rows.push(obj);
             }
             return rows;
         };
         
+        function applyTheme(config) {
+            const corPrimaria = config['Cor_Primaria'] || '#8D5B4C';
+            const corTextoPrimaria = config['Cor_Texto_Primaria'] || '#FFFFFF';
+            document.documentElement.style.setProperty('--cor-primaria', corPrimaria);
+            document.documentElement.style.setProperty('--cor-texto-primaria', corTextoPrimaria);
+        }
+
         function renderHeader(config) {
             const nomeRestaurante = config['Nome Restaurante'] || 'O Nosso Cardápio';
-            const slogan = config['Slogan'] || 'Feito com carinho para si!';
+            const slogan = config['Slogan'] || config['Especialidade'] || 'Feito com carinho para si!';
+            const logoUrl = config['Logo_URL'];
+            const headerImageUrl = config['Header_Image_URL'];
+            
             document.title = nomeRestaurante;
-            mainHeader.innerHTML = `<h1 class="text-4xl md:text-5xl font-bold text-gray-900">${nomeRestaurante}</h1><p class="text-gray-600 mt-2 text-lg">${slogan}</p>`;
+
+            let logoHtml = '';
+            if (logoUrl) {
+                logoHtml = `<img src="${logoUrl}" alt="Logo de ${nomeRestaurante}" class="max-h-20 mx-auto mb-4">`;
+            }
+            
+            const headerContent = document.getElementById('header-content');
+            if(headerContent) {
+                // CORREÇÃO: Usa a classe de CSS dedicada para a placa de fundo
+                headerContent.innerHTML = `
+                    <div class="header-plaque-bg inline-block p-6 rounded-lg">
+                        ${logoHtml}
+                        <h1 class="text-4xl md:text-6xl font-bold text-main">${nomeRestaurante}</h1>
+                        <p class="mt-2 text-lg text-secondary">${slogan}</p>
+                    </div>
+                `;
+            }
+
+            const headerBg = document.getElementById('header-bg');
+            if (headerBg && headerImageUrl) {
+                headerBg.style.backgroundImage = `url('${headerImageUrl}')`;
+            }
         }
 
         function renderFooter(config) {
-             const whatsapp = config['WhatsApp'];
+             const telefone = config['Telefone'];
              const instagram = config['Instagram URL'];
              const facebook = config['Facebook URL'];
+             const endereco = config['Endereço'];
+             const horarioAbertura = config['Horário de Abertura'];
+             const horarioFechado = config['Horário de Fechado'];
              const ano = new Date().getFullYear();
              const nomeRestaurante = config['Nome Restaurante'] || 'O Seu Restaurante';
+             
+             let infoBlock = '<div class="space-y-3 mb-6">';
+             if(horarioAbertura && horarioFechado) {
+                infoBlock += `<div class="flex items-center justify-center gap-2">${svgIcon('clock')} <span>${horarioAbertura} - ${horarioFechado}</span></div>`;
+             }
+             if(endereco) {
+                infoBlock += `<div class="flex items-center justify-center gap-2">${svgIcon('map-pin')} <span>${endereco}</span></div>`;
+             }
+             if(telefone) {
+                infoBlock += `<div class="flex items-center justify-center gap-2">${svgIcon('phone')} <span>${telefone}</span></div>`;
+             }
+             infoBlock += '</div>';
+
              let socialLinks = '';
-             if (whatsapp) socialLinks += `<a href="https://wa.me/${whatsapp.replace(/\D/g,'')}" target="_blank" class="text-green-600 hover:underline mx-2">WhatsApp</a>`;
-             if (instagram) socialLinks += `<a href="${instagram}" target="_blank" class="text-pink-600 hover:underline mx-2">Instagram</a>`;
-             if (facebook) socialLinks += `<a href="${facebook}" target="_blank" class="text-blue-800 hover:underline mx-2">Facebook</a>`;
-             mainFooter.innerHTML = `<div class="mb-4">${socialLinks}</div><p>&copy; ${ano} ${nomeRestaurante}. Todos os direitos reservados.</p>`;
+             if (telefone) socialLinks += `<a href="https://wa.me/55${telefone.replace(/\D/g,'')}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="WhatsApp">${svgIcon('whatsapp')}</a>`;
+             if (instagram) socialLinks += `<a href="${instagram}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="Instagram">${svgIcon('instagram')}</a>`;
+             if (facebook) socialLinks += `<a href="${facebook}" target="_blank" class="social-icon text-gray-500 dark:text-gray-400 transition-colors duration-300 mx-3" title="Facebook">${svgIcon('facebook')}</a>`;
+             
+             mainFooter.innerHTML = `${infoBlock}<div class="mb-4 flex justify-center items-center">${socialLinks}</div><p>&copy; ${ano} ${nomeRestaurante}. Todos os direitos reservados.</p>`;
+        }
+
+        function svgIcon(name) {
+            const icons = {
+                whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.447-4.435-9.884-9.888-9.884-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 4.315 1.847 6.062l-1.011 3.697 3.803-1.002z"/></svg>`,
+                instagram: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.644-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.059 1.689.073 4.948.073s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.441 1.441 1.441 1.441-.645 1.441-1.441-.645-1.44-1.441-1.44z"/></svg>`,
+                facebook: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>`,
+                clock: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+                'map-pin': `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
+                phone: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>`
+            };
+            return icons[name] || '';
         }
 
         function renderFilters(categories) {
-            categoryFiltersContainer.innerHTML = `<a href="#menu-container" onclick="event.preventDefault(); window.scrollTo(0, mainHeader.offsetHeight + 50);" class="px-4 py-2 bg-yellow-600 text-white rounded-full shadow-sm hover:bg-yellow-700 transition-colors">Todos</a>`;
+            categoryFiltersContainer.innerHTML = `<a href="#menu-container" onclick="event.preventDefault(); window.scrollTo(0, 0);" class="filter-btn px-4 py-2 rounded-full shadow-sm hover:bg-gray-200 transition-all">Todos</a>`;
+            
             categories.forEach(category => {
                 const filterButton = document.createElement('a');
-                
-                const buttonText = category['Título_Exibição'] || category['Nome_Categoria'];
+                const buttonText = category['Nome_Categoria'] || category['Titulo_Exibicao'];
                 const categoryId = category['Nome_Categoria'] || '';
-
                 filterButton.href = `#category-${categoryId.replace(/\s+/g, '-')}`;
                 filterButton.textContent = buttonText;
-                
-                // CORREÇÃO: Estilo melhorado para garantir a visibilidade
-                filterButton.className = "px-4 py-2 bg-white text-gray-800 border border-gray-300 rounded-full shadow-sm hover:bg-gray-200 transition-colors";
-                
+                filterButton.className = "filter-btn px-4 py-2 rounded-full shadow-sm hover:bg-gray-200 transition-all";
                 categoryFiltersContainer.appendChild(filterButton);
             });
         }
@@ -151,27 +255,28 @@
                 const categoryId = `category-${category['Nome_Categoria'].replace(/\s+/g, '-')}`;
                 const categorySection = document.createElement('section');
                 categorySection.id = categoryId;
-                categorySection.className = "pt-4";
+                categorySection.className = "pt-4 fade-in";
                 categorySection.innerHTML = `
-                    <div class="category-header-bg rounded-xl p-8 md:p-12 mb-8 shadow-lg flex flex-col justify-center items-center text-center" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${category['Foto_Categoria']}')">
-                        <h2 class="text-3xl md:text-4xl font-bold">${category['Título_Exibição']}</h2>
-                        <p class="mt-2 max-w-2xl">${category['Descrição_Seção']}</p>
+                    <div class="category-header-bg rounded-xl p-10 md:p-14 mb-8 shadow-lg flex flex-col justify-center items-center text-center" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${category['Foto_Categoria']}')">
+                        <h2 class="text-4xl md:text-5xl font-bold">${category['Titulo_Exibicao']}</h2>
+                        <p class="mt-2 max-w-2xl text-lg opacity-90">${category['Descricao_Secao']}</p>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         ${categoryItems.map(item => `
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden flex transform hover:scale-105 transition-transform duration-300">
-                                <img src="${item['Foto_URL']}" alt="${item['Nome']}" class="w-1/3 h-full object-cover" loading="lazy" onerror="this.style.display='none'">
-                                <div class="p-4 flex flex-col flex-grow">
-                                    <div class="flex justify-between items-start mb-1">
-                                        <h3 class="text-xl font-bold text-gray-800">${item['Nome']}</h3>
-                                        <p class="text-lg font-semibold text-green-700 whitespace-nowrap ml-4">${formatPrice(item['Preço'])}</p>
+                            <div class="card-bg rounded-lg shadow-lg overflow-hidden flex flex-col transform hover:shadow-xl hover:-translate-y-1 transition-all duration-300 fade-in">
+                                <img src="${item['Foto_URL']}" alt="${item['Nome']}" class="w-full h-48 object-cover" loading="lazy" onerror="this.style.display='none'">
+                                <div class="p-5 flex flex-col flex-grow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="text-2xl font-bold text-main">${item['Nome']}</h3>
+                                        <p class="text-xl font-bold text-green-700 whitespace-nowrap ml-4">${formatPrice(item['Preço'])}</p>
                                     </div>
-                                    <p class="text-gray-600 flex-grow">${item['Descrição']}</p>
+                                    <p class="text-secondary flex-grow">${item['Descrição']}</p>
                                 </div>
                             </div>`).join('')}
                     </div>`;
                 menuContainer.appendChild(categorySection);
             });
+            setupScrollAnimations();
         }
 
         async function fetchWithTimeout(resource, options = {}) {
@@ -179,22 +284,69 @@
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             try {
-                const response = await fetch(resource, { ...options, signal: controller.signal });
-                return response;
+                return await fetch(resource, { ...options, signal: controller.signal });
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    throw new Error(`A requisição para ${resource} demorou demasiado tempo (mais de 8 segundos).`);
-                }
+                if (error.name === 'AbortError') throw new Error(`A requisição para ${resource} demorou demasiado tempo.`);
                 throw error;
             } finally {
                 clearTimeout(id);
             }
         }
 
+        function setupScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        }
+        
+        function setupThemeSwitcher() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+
+                if (localStorage.getItem('color-theme')) {
+                    if (localStorage.getItem('color-theme') === 'light') {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    }
+                } else {
+                    if (document.documentElement.classList.contains('dark')) {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    }
+                }
+            });
+        }
+
         async function initMenu() {
+            setupThemeSwitcher();
             const cacheKey = 'cardapioData';
             const cacheDuration = 15 * 60 * 1000;
-
             try {
                 const cachedData = localStorage.getItem(cacheKey);
                 if (cachedData) {
@@ -205,17 +357,9 @@
                         return;
                     }
                 }
-
                 console.log("A buscar novos dados do cardápio...");
-                
-                const dataSources = [
-                    { key: 'categories', name: 'Categorias' },
-                    { key: 'items', name: 'Itens' },
-                    { key: 'config', name: 'Configuração' }
-                ];
-
+                const dataSources = [{ key: 'categories', name: 'Categorias' }, { key: 'items', name: 'Itens' }, { key: 'config', name: 'Configuração' }];
                 const allData = {};
-
                 for (const source of dataSources) {
                     loadingIndicator.querySelector('p').textContent = `A carregar ${source.name}...`;
                     const response = await fetchWithTimeout(GOOGLE_SHEETS_URLS[source.key]);
@@ -225,30 +369,26 @@
                     if (parsedData.length === 0) throw new Error(`Os dados de ${source.name} parecem estar vazios.`);
                     allData[source.key] = parsedData;
                 }
-
                 const { categories, items } = allData;
                 const config = allData.config.reduce((obj, item) => { obj[item['Campo']] = item['Valor']; return obj; }, {});
-                
                 localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: { categories, items, config } }));
-                
                 renderAll(categories, items, config);
-
             } catch (error) {
                 console.error('ERRO DETALHADO:', error);
-                menuContainer.innerHTML = `<div class="text-center p-8 bg-red-100 rounded-lg"><h3 class="font-bold text-red-800 text-lg">Ocorreu um Erro</h3><p class="text-red-700 mt-2">${error.message}</p></div>`;
+                menuContainer.innerHTML = `<div class="text-center p-8 bg-red-100 dark:bg-red-900/20 rounded-lg"><h3 class="font-bold text-red-800 dark:text-red-300 text-lg">Ocorreu um Erro</h3><p class="text-red-700 dark:text-red-400 mt-2">${error.message}</p></div>`;
             } finally {
                 loadingIndicator.style.display = 'none';
             }
         }
 
         function renderAll(categories, items, config) {
+            applyTheme(config);
             renderHeader(config);
             renderFooter(config);
             renderFilters(categories);
             renderMenu(categories, items);
-
             if (menuContainer.innerHTML.trim() === '') {
-                menuContainer.innerHTML = `<div class="text-center p-8 bg-yellow-100 rounded-lg"><h3 class="font-bold text-yellow-800 text-lg">Aviso</h3><p class="text-yellow-700 mt-2">Cardápio carregado, mas nenhum item correspondeu às categorias. Verifique se os nomes nas suas planilhas.</p></div>`;
+                menuContainer.innerHTML = `<div class="text-center p-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg"><h3 class="font-bold text-yellow-800 dark:text-yellow-300 text-lg">Aviso</h3><p class="text-yellow-700 dark:text-yellow-400 mt-2">Cardápio carregado, mas nenhum item correspondeu às categorias. Verifique se os nomes nas suas planilhas.</p></div>`;
             }
         }
 
